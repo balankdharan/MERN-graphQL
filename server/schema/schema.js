@@ -10,6 +10,7 @@ const {
   GraphQLNonNull,
   GraphQLEnumType,
 } = require("graphql");
+const mongoose = require("mongoose");
 
 const ProjectType = new GraphQLObjectType({
   name: "Project",
@@ -93,6 +94,13 @@ const mutation = new GraphQLObjectType({
         id: { type: GraphQLNonNull(GraphQLID) },
       },
       resolve(parent, args) {
+        Project.find({ clientId: args.id }).then((projects) => {
+          const deletePromises = projects.map((project) => {
+            return Project.deleteOne({ _id: project._id });
+          });
+
+          return Promise.all(deletePromises);
+        });
         return Client.findByIdAndDelete(args.id);
       },
     },
